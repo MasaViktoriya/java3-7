@@ -29,13 +29,4 @@ public class MainClient extends Application {
             }
         });
     }
-
-/*    public static void main(String[] args) {
-        MainClient mainClient = new MainClient();
-        try {
-            mainClient.start(new Stage());
-        } catch (IOException e){
-            e.printStackTrace();
-       }
-    }*/
 }
