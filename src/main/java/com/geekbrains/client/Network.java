@@ -89,5 +89,6 @@ public class Network {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.exit(1);
     }
 }
