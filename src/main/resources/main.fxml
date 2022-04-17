@@ -8,6 +8,7 @@
 <?import javafx.scene.control.PasswordField ?>
 
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.text.TextFlow?>
 <VBox fx:controller="com.geekbrains.client.ChatController" xmlns:fx="http://javafx.com/fxml" alignment="center">
     <HBox fx:id="authPanel">
         <TextField HBox.hgrow="ALWAYS" fx:id="loginField"  promptText="Логин"/>
@@ -16,7 +17,7 @@
     </HBox>
 
     <HBox VBox.vgrow="ALWAYS" >
-        <TextArea HBox.hgrow="ALWAYS" fx:id="textArea" editable="false"/>
+        <TextFlow HBox.hgrow="ALWAYS" fx:id="textFlow"/>
         <ListView fx:id="clientList" minWidth="200" maxHeight="200"/>
     </HBox>
 

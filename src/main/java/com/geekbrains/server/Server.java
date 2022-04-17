@@ -69,7 +69,7 @@ public class Server {
     public void sendPersonalMessage(String senderNickName, String recipientNickName, String personalMessage) {
         for (ClientHandler handler: connectedUsers){
             if (handler.getNickname().equals(recipientNickName) || handler.getNickname().equals(senderNickName)) {
-                handler.sendMessage(senderNickName + " to "+ recipientNickName + " (PM): " + personalMessage);
+                handler.sendMessage("PM "+ senderNickName + " to "+ recipientNickName + ": " + personalMessage);
             }
         }
     }
