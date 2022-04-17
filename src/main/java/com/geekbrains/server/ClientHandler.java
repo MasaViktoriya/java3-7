@@ -51,7 +51,7 @@ public class ClientHandler {
                     if (!server.isNickNameBusy(nickName)) {
                         sendAuthenticationMessage(true);
                         this.nickName = nickName;
-                        server.broadcastMessage(nickName + " зашел в чат");
+                        server.broadcastMessage(ServerCommandConstants.ENTER + " " + nickName);
                         sendMessage(server.getClients());
                         server.addConnectedUser(this);
                         return;
