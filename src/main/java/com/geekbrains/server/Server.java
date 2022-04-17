@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Server {
     private final AuthService authService;
     private List<ClientHandler> connectedUsers;
@@ -67,14 +68,14 @@ public class Server {
 
     public void sendPersonalMessage(String senderNickName, String recipientNickName, String personalMessage) {
         for (ClientHandler handler: connectedUsers){
-            if (handler.getNickname().equals(recipientNickName)) {
-                handler.sendMessage(senderNickName + " (PM): " + personalMessage);
+            if (handler.getNickname().equals(recipientNickName) || handler.getNickname().equals(senderNickName)) {
+                handler.sendMessage(senderNickName + " to "+ recipientNickName + " (PM): " + personalMessage);
             }
         }
     }
 
     public String getClients(){
-        StringBuilder builder = new StringBuilder("/clients");
+        StringBuilder builder = new StringBuilder("/clients ");
         for (ClientHandler user: connectedUsers){
             builder.append(user.getNickname()).append("\n");
         }
