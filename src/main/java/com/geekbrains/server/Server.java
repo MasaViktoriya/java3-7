@@ -75,7 +75,7 @@ public class Server {
     }
 
     public String getClients(){
-        StringBuilder builder = new StringBuilder("/clients ");
+        StringBuilder builder = new StringBuilder("/clients\n");
         for (ClientHandler user: connectedUsers){
             builder.append(user.getNickname()).append("\n");
         }

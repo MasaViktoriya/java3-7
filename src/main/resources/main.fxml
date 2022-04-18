@@ -18,7 +18,7 @@
 
     <HBox VBox.vgrow="ALWAYS" >
         <TextFlow HBox.hgrow="ALWAYS" fx:id="textFlow"/>
-        <ListView fx:id="clientList" minWidth="200" maxHeight="200"/>
+        <ListView fx:id="clientList" minWidth="100" maxWidth="100" maxHeight="200"/>
     </HBox>
 
     <HBox fx:id="messagePanel">

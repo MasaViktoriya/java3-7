@@ -29,13 +29,13 @@ public class Network {
                         if (messageFromServer.startsWith(ServerCommandConstants.ENTER)) {
                             String[] client = messageFromServer.split(" ");
                             controller.displayClient(client[1]);
-                            controller.displayMessage("Пользователь " + client[1] + " зашел в чат");
+                            controller.displayMessage("Пользователь " + client[1] + " зашел в чат\n");
                         } else if (messageFromServer.startsWith(ServerCommandConstants.EXIT)){
                             String[] client = messageFromServer.split(" ");
                             controller.removeClient(client[1]);
-                            controller.displayMessage(client[1] + " покинул чат");
+                            controller.displayMessage(client[1] + " покинул чат\n");
                         } else if (messageFromServer.startsWith(ServerCommandConstants.CLIENTS)) {
-                            String[] client = messageFromServer.split(" ");
+                            String[] client = messageFromServer.split("\n");
                             for (int i = 1; i < client.length; i++){
                                 controller.displayClient(client[i]);
                             }

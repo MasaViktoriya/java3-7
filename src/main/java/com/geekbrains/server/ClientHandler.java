@@ -81,9 +81,9 @@ public class ClientHandler {
                 String recipientNickName = personalMessageInfo[1];
                 String personalMessage = personalMessageInfo[2];
                 String senderNickName = this.getNickname();
-                server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage);
+                server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage + "\n");
             } else {
-                server.broadcastMessage(nickName + ": " + messageInChat);
+                server.broadcastMessage(nickName + ": " + messageInChat + "\n");
             }
         }
     }
