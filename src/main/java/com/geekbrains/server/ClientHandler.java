@@ -1,5 +1,8 @@
 package com.geekbrains.server;
 
+import com.geekbrains.client.ChatController;
+import com.geekbrains.client.MainClient;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -77,11 +80,7 @@ public class ClientHandler {
                 closeConnection();
                 return;
             } else if (messageInChat.startsWith(ServerCommandConstants.PERSONALMESSAGE)) {
-                String [] personalMessageInfo = messageInChat.split(" ", 3);
-                String recipientNickName = personalMessageInfo[1];
-                String personalMessage = personalMessageInfo[2];
-                String senderNickName = this.getNickname();
-                server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage + "\n");
+                sendPersonalMessage(messageInChat);
             } else {
                 server.broadcastMessage(nickName + ": " + messageInChat + "\n");
             }
@@ -95,6 +94,14 @@ public class ClientHandler {
         catch (IOException exception){
             exception.printStackTrace();
         }
+    }
+
+    public void sendPersonalMessage (String messageInChat) {
+        String [] personalMessageInfo = messageInChat.split(" ", 3);
+        String recipientNickName = personalMessageInfo[1];
+        String personalMessage = personalMessageInfo[2];
+        String senderNickName = this.getNickname();
+        server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage + "\n");
     }
 
     private void closeConnection () {

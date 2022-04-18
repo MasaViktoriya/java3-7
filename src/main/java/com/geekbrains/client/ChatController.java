@@ -1,5 +1,6 @@
 package com.geekbrains.client;
 
+import com.geekbrains.server.ClientHandler;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -90,8 +91,15 @@ public class ChatController implements Initializable {
     }
 
     public void sendMessage(ActionEvent actionEvent) {
-        network.sendMessage(messageField.getText());
-        messageField.clear();
+        String selectedUser = clientList.getSelectionModel().getSelectedItem();
+        if (selectedUser == null) {
+            network.sendMessage(messageField.getText());
+            messageField.clear();
+        }else {
+            network.sendMessage("/w " + selectedUser +" "+ messageField.getText());
+            messageField.clear();
+            clientList.getSelectionModel().clearSelection();
+        }
     }
 
     public void close(){
