@@ -1,6 +1,5 @@
 package com.geekbrains.client;
 
-import com.geekbrains.server.ClientHandler;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -8,6 +7,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -81,6 +81,13 @@ public class ChatController implements Initializable {
         });
     }
 
+    public boolean isNicknameInClientList (String oldNickName){
+        if (clientList.getItems().contains(oldNickName)) {
+            return true;
+        };
+        return false;
+    }
+
     public void sendAuth(ActionEvent actionEvent) {
         boolean authenticated = network.sendAuth(loginField.getText(), passwordField.getText());
         if (authenticated) {
@@ -96,6 +103,11 @@ public class ChatController implements Initializable {
             network.sendMessage(messageField.getText());
             messageField.clear();
         }else {
+/*            clientList.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->{
+                if(clientList.getSelectionModel().getSelectedIndices().get(0) <= -1){
+                clientList.getSelectionModel().clearSelection();
+                }
+            });*/
             network.sendMessage("/w " + selectedUser +" "+ messageField.getText());
             messageField.clear();
             clientList.getSelectionModel().clearSelection();

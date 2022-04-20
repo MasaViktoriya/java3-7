@@ -1,16 +1,11 @@
 package com.geekbrains.server.authorization;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.geekbrains.SQLConnection;
+import java.sql.*;
 
 public class InMemoryAuthServiceImpl implements  AuthService {
-    private final Map<String, UserData> users;
 
     public InMemoryAuthServiceImpl() {
-        users = new HashMap<>();
-        users.put("login1", new UserData("login1", "password1", "first_user"));
-        users.put("login2", new UserData("login2", "password2", "second_user"));
-        users.put("login3", new UserData("login3", "password3", "third_user"));
     }
 
 
@@ -22,11 +17,23 @@ public class InMemoryAuthServiceImpl implements  AuthService {
 
     @Override
     public synchronized String getNicknameByLoginAndPassword(String login, String password) {
-        UserData user = users.get(login);
-            if (user != null && user.getPassword().equals(password)) {
-                return user.getNickname();
+        try {
+            SQLConnection.connect();
+            try (ResultSet user = SQLConnection.statement.executeQuery(String.format("SELECT * FROM userList WHERE login = '%s'", login))) {
+                while (user.next()) {
+                    if (user.getString("password").equals(password)) {
+                        return user.getString("nickname");
+                    }
+                }
+            }catch (SQLException e){
+                e.printStackTrace();
             }
-            return  null;
+        }catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            SQLConnection.disconnect();
+        }
+        return null;
     }
 
     @Override

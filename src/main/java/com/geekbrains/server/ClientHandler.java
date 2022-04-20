@@ -1,12 +1,11 @@
 package com.geekbrains.server;
 
-import com.geekbrains.client.ChatController;
-import com.geekbrains.client.MainClient;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.*;
+import com.geekbrains.SQLConnection;
 
 public class ClientHandler {
     private final Server server;
@@ -19,6 +18,7 @@ public class ClientHandler {
     }
 
     private String nickName;
+    private String login;
 
     public ClientHandler (Server server, Socket socket) {
         try {
@@ -50,6 +50,7 @@ public class ClientHandler {
             if(message.startsWith(ServerCommandConstants.AUTHENTICATION)) {
                 String[] authInfo = message.split("\\s");
                 String nickName = server.getAuthService().getNicknameByLoginAndPassword(authInfo[1],  authInfo[2]);
+                String login = authInfo[1];
                 if (nickName != null ) {
                     if (!server.isNickNameBusy(nickName)) {
                         sendAuthenticationMessage(true);
@@ -57,6 +58,7 @@ public class ClientHandler {
                         server.broadcastMessage(ServerCommandConstants.ENTER + " " + nickName);
                         sendMessage(server.getClients());
                         server.addConnectedUser(this);
+                        this.login = login;
                         return;
                     } else {
                         sendAuthenticationMessage(false);
@@ -81,6 +83,28 @@ public class ClientHandler {
                 return;
             } else if (messageInChat.startsWith(ServerCommandConstants.PERSONALMESSAGE)) {
                 sendPersonalMessage(messageInChat);
+            } else if (messageInChat.startsWith(ServerCommandConstants.CHANGENICKNAME)){
+                server.broadcastMessage(messageInChat + " " + nickName + " " + login);
+                try {
+                    Thread.sleep(2000);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+                try {
+                    SQLConnection.connect();
+                    try (ResultSet newNickName = SQLConnection.statement.executeQuery(String.format("SELECT nickname FROM userList WHERE login = '%s'", login))) {
+                        while (newNickName.next()) {
+                            this.nickName = newNickName.getString("nickname");
+                        }
+                    }catch (SQLException e){
+                        e.printStackTrace();
+                    }
+                }catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    SQLConnection.disconnect();
+                }
+
             } else {
                 server.broadcastMessage(nickName + ": " + messageInChat + "\n");
             }
