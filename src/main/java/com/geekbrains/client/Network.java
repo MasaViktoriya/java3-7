@@ -3,9 +3,7 @@ package com.geekbrains.client;
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.ServerCommandConstants;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.sql.SQLException;
 import com.geekbrains.SQLConnection;
@@ -37,7 +35,7 @@ public class Network {
                         } else if (messageFromServer.startsWith(ServerCommandConstants.EXIT)){
                             String[] client = messageFromServer.split(" ");
                             controller.removeClient(client[1]);
-                            controller.displayMessage(client[1] + " покинул чат\n");
+                            controller.displayMessage("Пользователь " + client[1] + " покинул чат\n");
                         } else if (messageFromServer.startsWith(ServerCommandConstants.CLIENTS)) {
                             String[] client = messageFromServer.split("\n");
                             for (int i = 1; i < client.length; i++){
@@ -55,7 +53,7 @@ public class Network {
                                     controller.removeClient(oldNickName);
                                     controller.displayClient(newNickName);
                                 }
-                                controller.displayMessage(oldNickName + " сменил ник на " + newNickName + "\n");
+                                controller.displayMessage("Пользователь "  + oldNickName + " сменил ник на " + newNickName + "\n");
                             }catch(SQLException e){
                                 e.printStackTrace();
                             } finally {

@@ -1,8 +1,6 @@
 package com.geekbrains.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.sql.*;
 import com.geekbrains.SQLConnection;
@@ -12,11 +10,6 @@ public class ClientHandler {
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
-
-    public String getNickname() {
-        return nickName;
-    }
-
     private String nickName;
     private String login;
 
@@ -55,10 +48,10 @@ public class ClientHandler {
                     if (!server.isNickNameBusy(nickName)) {
                         sendAuthenticationMessage(true);
                         this.nickName = nickName;
+                        this.login = login;
                         server.broadcastMessage(ServerCommandConstants.ENTER + " " + nickName);
                         sendMessage(server.getClients());
                         server.addConnectedUser(this);
-                        this.login = login;
                         return;
                     } else {
                         sendAuthenticationMessage(false);
@@ -92,7 +85,7 @@ public class ClientHandler {
                 }
                 try {
                     SQLConnection.connect();
-                    try (ResultSet newNickName = SQLConnection.statement.executeQuery(String.format("SELECT nickname FROM userList WHERE login = '%s'", login))) {
+                    try (ResultSet newNickName = SQLConnection.statement.executeQuery(String.format("SELECT nickname FROM userlist WHERE login = '%s'", login))) {
                         while (newNickName.next()) {
                             this.nickName = newNickName.getString("nickname");
                         }
@@ -138,5 +131,13 @@ public class ClientHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getNickname() {
+        return nickName;
     }
 }
