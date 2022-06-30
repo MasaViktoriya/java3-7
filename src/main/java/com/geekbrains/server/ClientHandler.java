@@ -3,6 +3,9 @@ package com.geekbrains.server;
 import java.io.*;
 import java.net.Socket;
 import java.sql.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.geekbrains.SQLConnection;
 
 public class ClientHandler {
@@ -19,17 +22,17 @@ public class ClientHandler {
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        authentication();
-                        readMessages();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(() -> {
+                try {
+                    authentication();
+                    readMessages();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }).start();
+            });
+            executorService.shutdown();
         }
         catch (IOException exception) {
             exception.printStackTrace();
