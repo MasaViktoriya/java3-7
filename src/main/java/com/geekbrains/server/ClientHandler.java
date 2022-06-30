@@ -3,7 +3,10 @@ package com.geekbrains.server;
 import java.io.*;
 import java.net.Socket;
 import java.sql.*;
+import java.util.concurrent.ExecutorService;
+
 import com.geekbrains.SQLConnection;
+
 
 public class ClientHandler {
     private final Server server;
@@ -13,23 +16,21 @@ public class ClientHandler {
     private String nickName;
     private String login;
 
-    public ClientHandler (Server server, Socket socket) {
+    public ClientHandler (ExecutorService executorService, Server server, Socket socket) {
         try {
             this.server = server;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        authentication();
-                        readMessages();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+            executorService.execute(() -> {
+                try {
+                    authentication();
+                    readMessages();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }).start();
+            });
         }
         catch (IOException exception) {
             exception.printStackTrace();
