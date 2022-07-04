@@ -1,39 +1,36 @@
 package com.geekbrains.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.sql.*;
+import java.util.concurrent.ExecutorService;
+
+import com.geekbrains.SQLConnection;
+
 
 public class ClientHandler {
     private final Server server;
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
-
-    public String getNickname() {
-        return nickName;
-    }
-
     private String nickName;
+    private String login;
 
-    public ClientHandler (Server server, Socket socket) {
+    public ClientHandler (ExecutorService executorService, Server server, Socket socket) {
         try {
             this.server = server;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        authentication();
-                        readMessages();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+            executorService.execute(() -> {
+                try {
+                    authentication();
+                    readMessages();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }).start();
+            });
         }
         catch (IOException exception) {
             exception.printStackTrace();
@@ -47,10 +44,12 @@ public class ClientHandler {
             if(message.startsWith(ServerCommandConstants.AUTHENTICATION)) {
                 String[] authInfo = message.split("\\s");
                 String nickName = server.getAuthService().getNicknameByLoginAndPassword(authInfo[1],  authInfo[2]);
+                String login = authInfo[1];
                 if (nickName != null ) {
                     if (!server.isNickNameBusy(nickName)) {
                         sendAuthenticationMessage(true);
                         this.nickName = nickName;
+                        this.login = login;
                         server.broadcastMessage(ServerCommandConstants.ENTER + " " + nickName);
                         sendMessage(server.getClients());
                         server.addConnectedUser(this);
@@ -77,13 +76,31 @@ public class ClientHandler {
                 closeConnection();
                 return;
             } else if (messageInChat.startsWith(ServerCommandConstants.PERSONALMESSAGE)) {
-                String [] personalMessageInfo = messageInChat.split(" ", 3);
-                String recipientNickName = personalMessageInfo[1];
-                String personalMessage = personalMessageInfo[2];
-                String senderNickName = this.getNickname();
-                server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage);
+                sendPersonalMessage(messageInChat);
+            } else if (messageInChat.startsWith(ServerCommandConstants.CHANGENICKNAME)){
+                server.broadcastMessage(messageInChat + " " + nickName + " " + login);
+                try {
+                    Thread.sleep(2000);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+                try {
+                    SQLConnection.connect();
+                    try (ResultSet newNickName = SQLConnection.statement.executeQuery(String.format("SELECT nickname FROM userlist WHERE login = '%s'", login))) {
+                        while (newNickName.next()) {
+                            this.nickName = newNickName.getString("nickname");
+                        }
+                    }catch (SQLException e){
+                        e.printStackTrace();
+                    }
+                }catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    SQLConnection.disconnect();
+                }
+
             } else {
-                server.broadcastMessage(nickName + ": " + messageInChat);
+                server.broadcastMessage(nickName + ": " + messageInChat + "\n");
             }
         }
     }
@@ -97,6 +114,14 @@ public class ClientHandler {
         }
     }
 
+    public void sendPersonalMessage (String messageInChat) {
+        String [] personalMessageInfo = messageInChat.split(" ", 3);
+        String recipientNickName = personalMessageInfo[1];
+        String personalMessage = personalMessageInfo[2];
+        String senderNickName = this.getNickname();
+        server.sendPersonalMessage(senderNickName, recipientNickName, personalMessage + "\n");
+    }
+
     private void closeConnection () {
         server.disconnectUser(this);
         server.broadcastMessage(ServerCommandConstants.EXIT + " " + nickName);
@@ -107,5 +132,13 @@ public class ClientHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getNickname() {
+        return nickName;
     }
 }

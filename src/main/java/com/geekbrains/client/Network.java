@@ -3,16 +3,18 @@ package com.geekbrains.client;
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.ServerCommandConstants;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.sql.SQLException;
+import com.geekbrains.SQLConnection;
+
 
 public class Network {
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private final ChatController controller;
+
 
     public Network(ChatController chatController) {
         this.controller = chatController;
@@ -29,17 +31,35 @@ public class Network {
                         if (messageFromServer.startsWith(ServerCommandConstants.ENTER)) {
                             String[] client = messageFromServer.split(" ");
                             controller.displayClient(client[1]);
-                            controller.displayMessage("Пользователь " + client[1] + " зашел в чат");
+                            controller.displayMessage("Пользователь " + client[1] + " зашел в чат\n");
                         } else if (messageFromServer.startsWith(ServerCommandConstants.EXIT)){
                             String[] client = messageFromServer.split(" ");
                             controller.removeClient(client[1]);
-                            controller.displayMessage(client[1] + " покинул чат");
+                            controller.displayMessage("Пользователь " + client[1] + " покинул чат\n");
                         } else if (messageFromServer.startsWith(ServerCommandConstants.CLIENTS)) {
-                            String[] client = messageFromServer.split(" ");
+                            String[] client = messageFromServer.split("\n");
                             for (int i = 1; i < client.length; i++){
                                 controller.displayClient(client[i]);
                             }
-                        } else {
+                        }  else if (messageFromServer.startsWith(ServerCommandConstants.CHANGENICKNAME)){
+                            String [] changeNick = messageFromServer.split(" ");
+                            String oldNickName = changeNick[2];
+                            String newNickName = changeNick[1];
+                            String login = changeNick[3];
+                            try{
+                                SQLConnection.connect();
+                                changeNickName(login, newNickName);
+                                if (controller.isNicknameInClientList(oldNickName)){
+                                    controller.removeClient(oldNickName);
+                                    controller.displayClient(newNickName);
+                                }
+                                controller.displayMessage("Пользователь "  + oldNickName + " сменил ник на " + newNickName + "\n");
+                            }catch(SQLException e){
+                                e.printStackTrace();
+                            } finally {
+                                SQLConnection.disconnect();
+                            }
+                        }  else {
                             controller.displayMessage(messageFromServer);
                         }
                     }
@@ -79,6 +99,10 @@ public class Network {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private static void changeNickName(String login, String newNickName) throws SQLException{
+        SQLConnection.statement.executeUpdate(String.format("UPDATE userList SET nickname = '%s' WHERE login = '%s'", newNickName, login));
     }
 
     public void closeConnection() {

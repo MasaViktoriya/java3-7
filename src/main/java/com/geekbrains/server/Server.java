@@ -3,19 +3,22 @@ package com.geekbrains.server;
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.authorization.AuthService;
 import com.geekbrains.server.authorization.InMemoryAuthServiceImpl;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class Server {
     private final AuthService authService;
     private List<ClientHandler> connectedUsers;
+    private final ExecutorService executorService;
 
     public Server() {
+        executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         authService = new InMemoryAuthServiceImpl();
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
@@ -24,7 +27,7 @@ public class Server {
                 System.out.println("Сервер ожидает подключения");
                 Socket socket = server.accept();
                 System.out.println("Клиент подключился");
-                new ClientHandler(this, socket);
+                new ClientHandler(executorService, this, socket);
             }
         }
         catch (IOException exception){
@@ -69,13 +72,13 @@ public class Server {
     public void sendPersonalMessage(String senderNickName, String recipientNickName, String personalMessage) {
         for (ClientHandler handler: connectedUsers){
             if (handler.getNickname().equals(recipientNickName) || handler.getNickname().equals(senderNickName)) {
-                handler.sendMessage(senderNickName + " to "+ recipientNickName + " (PM): " + personalMessage);
+                handler.sendMessage("PM "+ senderNickName + " to "+ recipientNickName + ": " + personalMessage);
             }
         }
     }
 
     public String getClients(){
-        StringBuilder builder = new StringBuilder("/clients ");
+        StringBuilder builder = new StringBuilder("/clients\n");
         for (ClientHandler user: connectedUsers){
             builder.append(user.getNickname()).append("\n");
         }
