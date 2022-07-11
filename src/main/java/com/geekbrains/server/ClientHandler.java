@@ -6,9 +6,12 @@ import java.sql.*;
 import java.util.concurrent.ExecutorService;
 
 import com.geekbrains.SQLConnection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class ClientHandler {
+    private static final Logger LOGGER = LogManager.getLogger(ClientHandler.class);
     private final Server server;
     private final Socket socket;
     private final DataInputStream inputStream;

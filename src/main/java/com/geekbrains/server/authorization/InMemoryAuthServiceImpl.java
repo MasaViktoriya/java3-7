@@ -1,9 +1,14 @@
 package com.geekbrains.server.authorization;
 
 import com.geekbrains.SQLConnection;
+import com.geekbrains.server.ServerStarter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 
 public class InMemoryAuthServiceImpl implements  AuthService {
+    private static final Logger LOGGER = LogManager.getLogger(InMemoryAuthServiceImpl.class);
 
     public InMemoryAuthServiceImpl() {
     }
@@ -11,7 +16,7 @@ public class InMemoryAuthServiceImpl implements  AuthService {
 
     @Override
     public void start() {
-        System.out.println("Сервис аутентификации инициализирован");
+        LOGGER.debug("Сервис аутентификации инициализирован");
 
     }
 
@@ -38,7 +43,7 @@ public class InMemoryAuthServiceImpl implements  AuthService {
 
     @Override
     public void end() {
-        System.out.println("Сервис аутентификации отключен");
+        LOGGER.debug("Сервис аутентификации отключен");
 
     }
 }
